@@ -56,16 +56,16 @@ export function timeAgo(iso) {
 }
 
 const NAV = [
-  { id: 'hoy', href: '#/hoy', label: 'Mi día', icon: icon.sun },
-  { id: 'bienestar', href: '#/diario', label: 'Mi bienestar', icon: icon.heart },
-  { id: 'cuerpo', href: '#/ciclo', label: 'Mi cuerpo', icon: icon.body },
-  { id: 'universo', href: '#/universo', label: 'Mi universo', icon: icon.star },
-  { id: 'rituales', href: '#/rituales', label: 'Mis rituales', icon: icon.flower },
+  { id: 'hoy', href: '#/hoy', label: 'Mi día', short: 'Mi día', icon: icon.sun },
+  { id: 'bienestar', href: '#/diario', label: 'Mi bienestar', short: 'Bienestar', icon: icon.heart },
+  { id: 'cuerpo', href: '#/ciclo', label: 'Mi cuerpo', short: 'Cuerpo', icon: icon.body },
+  { id: 'universo', href: '#/universo', label: 'Mi universo', short: 'Universo', icon: icon.star },
+  { id: 'rituales', href: '#/rituales', label: 'Mis rituales', short: 'Rituales', icon: icon.flower },
 ];
 
 export function nav(active) {
   return `<nav class="nav" aria-label="Navegación principal">${NAV.map(
-    (item) => `<a href="${item.href}" aria-label="${item.label}"${item.id === active ? ' aria-current="page"' : ''}>${item.icon()}</a>`
+    (item) => `<a href="${item.href}" aria-label="${item.label}"${item.id === active ? ' aria-current="page"' : ''}>${item.icon()}<span class="nav-label" aria-hidden="true">${item.short}</span></a>`
   ).join('')}</nav>`;
 }
 

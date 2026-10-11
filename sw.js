@@ -1,7 +1,7 @@
 // Guarda la app en el teléfono para que abra sin conexión.
 // Con conexión siempre carga la versión más nueva. Si agregas o quitas
 // archivos de la app, actualiza APP_FILES y sube este número de versión.
-const VERSION = 'v6';
+const VERSION = 'v8';
 const APP_CACHE = `volver-a-ti-${VERSION}`;
 const FONT_CACHE = 'volver-a-ti-fonts';
 
@@ -72,9 +72,10 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // Primero la red (para ver cambios nuevos); sin conexión, la copia guardada.
+  // Primero la red, preguntando siempre si hay una versión nueva (sin esperar
+  // los 10 minutos de caché de GitHub Pages); sin conexión, la copia guardada.
   event.respondWith(
-    fetch(request)
+    fetch(request, { cache: 'no-cache' })
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();

@@ -1,4 +1,4 @@
-import { get, put, getAll, getEntries, getSetting } from '../db.js';
+import { get, put, getAll, getEntries, getSetting, setSetting } from '../db.js';
 import { icon, nav, esc, dayKey, dayOfYear, longDate, toast, uid, refresh, dotRing, timeAgo } from '../ui.js';
 import { MOOD_ADJ, cardOfDay, energyMessage, movementSuggestion, PROMPTS } from '../data.js';
 import { cycleToday, PHASE_COLORS } from '../cycle.js';
@@ -21,9 +21,10 @@ const timeNow = () => {
 
 export default async function hoy(root) {
   const today = dayKey();
-  const [checkin, name, periods, cycleLog, meds, doseList, ritualDay, skincare, entries] = await Promise.all([
+  const [checkin, name, periods, cycleLog, meds, doseList, ritualDay, skincare, entries, tipsSeen] = await Promise.all([
     get('checkins', today), getSetting('name', ''), getAll('periods'), get('cycleLogs', today),
     getAll('meds'), getEntries('doses'), get('rituals', today), getSetting('skincare', null), getAll('entries'),
+    getSetting('tipsSeen', false),
   ]);
   const doses = Object.fromEntries(doseList);
   const card = cardOfDay(dayOfYear());
@@ -51,6 +52,17 @@ export default async function hoy(root) {
   const lastEntry = sortedEntries[0];
   const photoURL = withPhoto ? URL.createObjectURL(withPhoto.photos[0].blob) : null;
 
+  // "Tu siguiente paso": lo más útil que puedes hacer ahora mismo.
+  const now = timeNow();
+  const dueDose = scheduledFor(meds, today).find((d) => !doses[d.key] && d.time <= now);
+  const wroteToday = entries.some((e) => new Date(e.createdAt).toDateString() === new Date().toDateString());
+  let nextStep;
+  if (!checkin) nextStep = { title: '¿Cómo te sientes hoy?', text: 'Haz tu check-in. Toma menos de un minuto.', href: '#/checkin', action: 'Empezar' };
+  else if (dueDose) nextStep = { title: `${dueDose.med.name} · ${dueDose.time}`, text: 'Es hora de tu toma. Márcala cuando la tomes.', take: dueDose.key, action: 'Ya la tomé' };
+  else if (anxious) nextStep = { title: 'Respira 3 minutos', text: 'Registraste ansiedad. Una pausa corta puede ayudarte.', href: '#/pausa/ansiedad', action: 'Respirar' };
+  else if (!wroteToday) nextStep = { title: 'Escribe dos líneas', text: prompt, href: '#/entrada/nueva?prompt=1', action: 'Escribir' };
+  else nextStep = { title: 'Todo listo por hoy', text: 'Hiciste tu check-in y escribiste. Disfruta tu día.', href: '#/carta', action: 'Ver tu carta' };
+
   const check = (item) => {
     const inner = `<span class="ring">${item.done ? icon.check({ size: 12 }) : ''}</span><span class="t">${esc(item.label)}${item.when ? `<span class="when" style="display: block">${esc(item.when)}</span>` : ''}</span>`;
     if (item.key) {
@@ -62,12 +74,27 @@ export default async function hoy(root) {
   };
 
   const tiles = [
-    !checkin && `
-    <a class="tile tile-sig span-2" data-cat="mente" href="#/checkin" style="min-height: 120px">
-      <span class="eyebrow sm">Check-in</span>
-      <strong style="font-size: 22px; font-weight: 400">¿Cómo te sientes hoy?</strong>
-      <span class="small" style="color: #3A362E">Menos de un minuto. Sin respuestas correctas.</span>
-    </a>`,
+    !tipsSeen && `
+    <section class="tile tile-glass span-2" aria-labelledby="tips-title" style="min-height: 0">
+      <h2 id="tips-title" class="h2">Así funciona Volver a ti</h2>
+      <ol class="tips" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+        <li><span class="n">1</span><span>Empieza cada día con tu <strong>check-in</strong>: son cuatro preguntas rápidas.</span></li>
+        <li><span class="n">2</span><span>Toca los <strong>círculos</strong> de "Para hoy" para marcar lo que ya hiciste.</span></li>
+        <li><span class="n">3</span><span>Usa <strong>+</strong> para escribir en tu diario, o el <strong>micrófono</strong> para dictar.</span></li>
+      </ol>
+      <button type="button" class="btn sm" id="tips-ok" style="align-self: flex-start">Entendido</button>
+    </section>`,
+
+    `<section class="tile tile-sig span-2" aria-labelledby="next-title" style="min-height: 0; flex-direction: row; align-items: center; gap: 14px">
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+        <span class="eyebrow sm">Tu siguiente paso</span>
+        <strong id="next-title" style="font-size: 20px; font-weight: 500; line-height: 1.2">${esc(nextStep.title)}</strong>
+        <span class="small" style="color: #3A362E">${esc(nextStep.text)}</span>
+      </span>
+      ${nextStep.take
+        ? `<button type="button" class="btn sm" data-take="${esc(nextStep.take)}" style="flex-shrink: 0">${esc(nextStep.action)}</button>`
+        : `<a class="btn sm" href="${nextStep.href}" style="flex-shrink: 0">${esc(nextStep.action)}</a>`}
+    </section>`,
 
     `<section class="tile tile-dark row-2" data-cat="cuerpo" aria-labelledby="para-hoy">
       <h2 id="para-hoy" class="dot-title" style="font-size: 28px">Para<br>hoy</h2>
@@ -134,7 +161,7 @@ export default async function hoy(root) {
     </section>`,
   ].filter(Boolean);
 
-  const total = tiles.length;
+  const total = tiles.filter((t) => t.includes('data-cat=')).length;
 
   root.innerHTML = `
   <main class="screen with-pill">
@@ -144,7 +171,10 @@ export default async function hoy(root) {
         <h1 class="h1">Hola${name ? `, ${esc(name)}` : ''}</h1>
         <p class="lead" style="font-size: 15px">${checkin ? `${feelingLine(checkin)} ${energyMessage(energy).split('.')[0]}.` : 'Aún no haces tu check-in de hoy.'}</p>
       </div>
-      <a class="icon-btn" href="#/checkin" aria-label="${checkin ? 'Editar check-in' : 'Hacer check-in'}">${icon.pen({ size: 20 })}</a>
+      <span style="display: flex; gap: 8px">
+        <a class="icon-btn" href="#/checkin" aria-label="${checkin ? 'Editar check-in' : 'Hacer check-in'}">${icon.pen({ size: 20 })}</a>
+        <a class="icon-btn" href="#/perfil" aria-label="Mi perfil">${icon.user({ size: 20 })}</a>
+      </span>
     </header>
 
     <div class="chips" role="group" aria-label="Mostrar">
@@ -160,6 +190,15 @@ export default async function hoy(root) {
   ${nav('hoy')}`;
 
   const onClick = async (event) => {
+    if (event.target.closest('#tips-ok')) {
+      await setSetting('tipsSeen', true);
+      const tips = root.querySelector('#tips-title').closest('.tile');
+      tips.style.transition = 'opacity 0.25s, transform 0.25s';
+      tips.style.opacity = '0';
+      tips.style.transform = 'scale(0.97)';
+      setTimeout(() => tips.remove(), 250);
+      return;
+    }
     const filter = event.target.closest('[data-filter]');
     if (filter) {
       const cat = filter.dataset.filter;
