@@ -1,7 +1,7 @@
 import { icon, nav, tabs } from '../ui.js';
 import { PAUSES } from '../data.js';
 
-const DOTS = ['var(--sky)', 'var(--lilac)', 'var(--teal)', 'var(--peach)', '#DBB99C', '#DAA6A8', '#B0CEC2'];
+const DOTS = ['var(--sky)', 'var(--lilac)', 'var(--teal)', 'var(--peach)', '#D7A674', '#C9A0A6', '#929F86'];
 
 export default async function biblioteca(root) {
   root.innerHTML = `

@@ -1,7 +1,7 @@
 // Guarda la app en el teléfono para que abra sin conexión.
 // Con conexión siempre carga la versión más nueva. Si agregas o quitas
 // archivos de la app, actualiza APP_FILES y sube este número de versión.
-const VERSION = 'v2';
+const VERSION = 'v6';
 const APP_CACHE = `volver-a-ti-${VERSION}`;
 const FONT_CACHE = 'volver-a-ti-fonts';
 

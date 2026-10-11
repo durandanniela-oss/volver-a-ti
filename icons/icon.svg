@@ -1,20 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#F2EFE9"/>
-      <stop offset="1" stop-color="#F5E2F8"/>
+      <stop offset="0" stop-color="#F1ECE3"/>
+      <stop offset="1" stop-color="#E3E4D6"/>
     </linearGradient>
     <linearGradient id="sig" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#BED9DE"/>
-      <stop offset="0.16" stop-color="#B0CEC2"/>
-      <stop offset="0.38" stop-color="#DBB99C"/>
-      <stop offset="0.48" stop-color="#E6B18E"/>
-      <stop offset="0.64" stop-color="#DAA6A8"/>
-      <stop offset="0.84" stop-color="#C59CC8"/>
-      <stop offset="1" stop-color="#C098D6"/>
+      <stop offset="0" stop-color="#B5C3A3"/>
+      <stop offset="0.25" stop-color="#C9CDB0"/>
+      <stop offset="0.5" stop-color="#D7A674"/>
+      <stop offset="0.72" stop-color="#E38A52"/>
+      <stop offset="1" stop-color="#C2A08F"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
   <circle cx="256" cy="256" r="150" fill="url(#sig)"/>
-  <circle cx="256" cy="256" r="186" fill="none" stroke="#2F2A31" stroke-width="5" stroke-dasharray="2 14" stroke-linecap="round" opacity="0.55"/>
+  <circle cx="256" cy="256" r="186" fill="none" stroke="#2B2A24" stroke-width="5" stroke-dasharray="2 14" stroke-linecap="round" opacity="0.55"/>
 </svg>

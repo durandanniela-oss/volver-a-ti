@@ -41,7 +41,7 @@ export default async function pausa(root, { params }) {
   root.innerHTML = `
   <main class="pause">
     <header class="topbar">
-      <span class="eyebrow" style="color: #E6DDF6">${preset.need}</span>
+      <span class="eyebrow" style="color: #EADFCB">${preset.need}</span>
       <a class="icon-btn" href="#/biblioteca" aria-label="Cerrar">${icon.close()}</a>
     </header>
     <div class="orb-wrap" aria-hidden="true">
@@ -51,7 +51,7 @@ export default async function pausa(root, { params }) {
     <div class="phase" id="phase" aria-live="polite"></div>
     <p class="small" style="color: var(--on-dark-muted); text-align: center; max-width: 290px; margin-top: 10px; font-size: 16px">${preset.hint || 'Sigue el círculo. Cuando crezca, inhala; cuando se haga pequeño, suelta el aire.'}</p>
     <div style="margin-top: auto; align-self: stretch; display: flex; flex-direction: column; gap: 12px">
-      <button type="button" id="sound" class="btn btn-ghost" aria-pressed="false" style="color: var(--on-dark); border-color: rgba(247,245,240,0.25)">Sonido suave: no</button>
+      <button type="button" id="sound" class="btn btn-ghost" aria-pressed="false" style="color: var(--on-dark); border-color: rgba(245,240,230,0.25)">Sonido suave: no</button>
       <div class="timer" style="margin-top: 0">
         <span class="num" style="font-size: 22px" id="clock"></span>
         <button type="button" id="toggle" aria-label="Pausar">${icon.pause()}</button>

@@ -35,8 +35,8 @@ export function moonSVG(fraction, size = 150) {
   const termSweep = waxing ? (k > 0 ? 0 : 1) : (k > 0 ? 1 : 0);
   const lit = `M50,0 A50,50 0 0 ${limbSweep} 50,100 A${rx.toFixed(2)},50 0 0 ${termSweep} 50,0 Z`;
   return `<svg width="${size}" height="${size}" viewBox="-2 -2 104 104" aria-hidden="true">
-    <circle cx="50" cy="50" r="50" fill="#3A343D" stroke="#C4A4DF" stroke-width="1.5"/>
-    <path d="${lit}" fill="#F6EBF6"/>
+    <circle cx="50" cy="50" r="50" fill="#3E3B33" stroke="#D7A674" stroke-width="1.5"/>
+    <path d="${lit}" fill="#F3EBDD"/>
   </svg>`;
 }
 

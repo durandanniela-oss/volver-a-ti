@@ -27,7 +27,33 @@ export const icon = {
   minus: (o) => svg('<path d="M5 12h14"/>', { sw: 2, ...o }),
   doc: (o) => svg('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>', { size: 18, ...o }),
   up: (o) => svg('<path d="M6 15l6-6 6 6"/>', { sw: 2, size: 16, ...o }),
+  mic: (o) => svg('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', o),
 };
+
+// Anillo de puntos decorativo (como el ícono de la tarjeta iridiscente de Notis+).
+export function dotRing(size = 64) {
+  let dots = '';
+  const rings = [[26, 14, 2.6], [15, 9, 2]];
+  for (const [r, n, base] of rings) {
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + r;
+      const s = base * (0.7 + ((i * 7) % 5) / 8);
+      dots += `<circle cx="${(32 + Math.cos(a) * r).toFixed(1)}" cy="${(32 + Math.sin(a) * r).toFixed(1)}" r="${s.toFixed(2)}"/>`;
+    }
+  }
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">${dots}</svg>`;
+}
+
+export function timeAgo(iso) {
+  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (minutes < 1) return 'ahora';
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return 'ayer';
+  return `hace ${days} días`;
+}
 
 const NAV = [
   { id: 'hoy', href: '#/hoy', label: 'Mi día', icon: icon.sun },

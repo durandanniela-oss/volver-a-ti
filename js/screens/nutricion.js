@@ -51,7 +51,7 @@ export default async function nutricion(root) {
     const max = Math.max(...values) + 0.5;
     const points = values.map((v, i) => `${(i / (values.length - 1)) * 300},${70 - ((v - min) / (max - min)) * 60}`).join(' ');
     return `<svg viewBox="-6 0 312 80" width="100%" height="80" role="img" aria-label="Evolución del peso">
-      <polyline points="${points}" fill="none" stroke="#A385C9" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="${points}" fill="none" stroke="#B99375" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     </svg>`;
   }
 
@@ -112,7 +112,7 @@ export default async function nutricion(root) {
       </div>
       <p class="small" style="font-size: 12px">Sin metas ni alertas. Puedes ocultarlo en Mi perfil.</p>
     </form>` : `
-    <section class="card" style="background: rgba(255,255,255,0.4); border: 1px dashed rgba(47,42,49,0.18)">
+    <section class="card" style="background: rgba(255,255,255,0.4); border: 1px dashed rgba(43,42,36,0.18)">
       <h2 class="h2">Registro de peso</h2>
       <p class="small">Es opcional y está oculto. Si quieres usarlo, actívalo en <a href="#/perfil">Mi perfil</a>. Sin alertas ni metas de restricción.</p>
     </section>`}

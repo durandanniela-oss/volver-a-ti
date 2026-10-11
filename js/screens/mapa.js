@@ -4,8 +4,8 @@ import { STOPWORDS } from '../data.js';
 import { energyTrend } from '../cycle.js';
 
 const MOOD_COLORS = {
-  Tranquilidad: '#6FA9BF', Alegría: '#E6B18E', Ansiedad: '#5B4A8B', Tristeza: '#8A9BB0',
-  Frustración: '#C2706A', Motivación: '#DBB99C', Sensibilidad: '#C59CC8', Agotamiento: '#6A626C',
+  Tranquilidad: '#7E9A8E', Alegría: '#E38A52', Ansiedad: '#5E4B57', Tristeza: '#8E949B',
+  Frustración: '#A65A44', Motivación: '#D7A674', Sensibilidad: '#B88A9A', Agotamiento: '#7A6E62',
 };
 const WEEKDAYS = ['domingos', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados'];
 const avg = (list) => list.reduce((a, b) => a + b, 0) / list.length;

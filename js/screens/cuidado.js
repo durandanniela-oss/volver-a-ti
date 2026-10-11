@@ -28,7 +28,7 @@ export default async function cuidado(root) {
     const right = status === 'taken'
       ? `<button type="button" class="status-pill" data-undo="${esc(key)}" style="background: var(--teal); border: none" aria-label="Tomada a las ${esc(doses[key].at)}. Tocar para deshacer">${icon.check()} Tomada ${esc(doses[key].at)}</button>`
       : status === 'skipped'
-        ? `<button type="button" class="status-pill" data-undo="${esc(key)}" style="background: rgba(47,42,49,0.08); border: none" aria-label="Omitida. Tocar para deshacer">Omitida</button>`
+        ? `<button type="button" class="status-pill" data-undo="${esc(key)}" style="background: rgba(43,42,36,0.08); border: none" aria-label="Omitida. Tocar para deshacer">Omitida</button>`
         : `<span style="display: flex; gap: 6px">
             <button type="button" class="btn sm" data-take="${esc(key)}" style="height: 40px; padding: 0 14px">Tomada</button>
             <button type="button" class="btn sm btn-ghost" data-skip="${esc(key)}" style="height: 40px; padding: 0 12px">Omitir</button>
@@ -111,9 +111,9 @@ export default async function cuidado(root) {
     <section class="card" aria-labelledby="seguimiento">
       <h2 id="seguimiento" class="h2">Mi seguimiento · 14 días</h2>
       <div class="grid-2" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-        <div style="border-radius: 18px; background: rgba(47,42,49,0.04); padding: 10px 12px"><span class="small" style="font-size: 12px">Energía</span><strong class="num" style="display: block; font-size: 18px">${avgEnergy}/5</strong></div>
-        <div style="border-radius: 18px; background: rgba(47,42,49,0.04); padding: 10px 12px"><span class="small" style="font-size: 12px">Dormí mal</span><strong class="num" style="display: block; font-size: 18px">${badSleep}</strong></div>
-        <div style="border-radius: 18px; background: rgba(47,42,49,0.04); padding: 10px 12px"><span class="small" style="font-size: 12px">Días con síntomas</span><strong class="num" style="display: block; font-size: 18px">${symptomDays}</strong></div>
+        <div style="border-radius: 18px; background: rgba(43,42,36,0.04); padding: 10px 12px"><span class="small" style="font-size: 12px">Energía</span><strong class="num" style="display: block; font-size: 18px">${avgEnergy}/5</strong></div>
+        <div style="border-radius: 18px; background: rgba(43,42,36,0.04); padding: 10px 12px"><span class="small" style="font-size: 12px">Dormí mal</span><strong class="num" style="display: block; font-size: 18px">${badSleep}</strong></div>
+        <div style="border-radius: 18px; background: rgba(43,42,36,0.04); padding: 10px 12px"><span class="small" style="font-size: 12px">Días con síntomas</span><strong class="num" style="display: block; font-size: 18px">${symptomDays}</strong></div>
       </div>
       <a class="btn" href="#/resumen">${icon.doc()} Resumen para mi médico</a>
       <p class="small" style="font-size: 12px">La app no atribuye síntomas a un medicamento ni sugiere cambios de dosis: eso lo decides con tu médico.</p>

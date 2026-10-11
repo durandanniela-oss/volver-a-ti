@@ -3,7 +3,7 @@ import { icon, nav, tabs, esc, chips, handleChip, dayKey, lastDays, weekdayIniti
 import { WORKOUT_TYPES, INTENSITY, WORKOUT_FEELINGS } from '../data.js';
 
 const TYPE_COLORS = {
-  Yoga: 'var(--lilac)', Pilates: 'var(--peach)', Reformer: 'var(--peach)', Fuerza: '#DAA6A8',
+  Yoga: 'var(--lilac)', Pilates: 'var(--peach)', Reformer: 'var(--peach)', Fuerza: '#C9A0A6',
   Caminata: 'var(--teal)', Movilidad: 'var(--sky)', Stretching: 'var(--sky)', Otra: 'var(--blush)',
 };
 
@@ -34,7 +34,7 @@ export default async function movimiento(root) {
   const weekMinutes = week.reduce((n, d) => n + (byDay[d] || []).reduce((m, w) => m + (w.minutes || 0), 0), 0);
 
   const suggestionsHTML = () => SUGGESTIONS[state.level].map(([name, detail]) => `
-    <div class="list-row" style="border-color: rgba(247,245,240,0.12)">
+    <div class="list-row" style="border-color: rgba(245,240,230,0.12)">
       <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
         <strong style="font-size: 18px; font-weight: 500">${name}</strong>
         <span class="small">${detail}</span>
@@ -59,7 +59,7 @@ export default async function movimiento(root) {
     </section>
 
     <section class="card card-dark" aria-label="Sugerencias de movimiento" style="gap: 4px">
-      <span class="eyebrow sm" style="color: #E6DDF6; padding-bottom: 6px" id="level-label">Para tu energía ${state.level.toLowerCase()}</span>
+      <span class="eyebrow sm" style="color: #EADFCB; padding-bottom: 6px" id="level-label">Para tu energía ${state.level.toLowerCase()}</span>
       <div id="suggestions">${suggestionsHTML()}</div>
       <p class="small" style="font-size: 12px; padding-top: 8px">Son sugerencias. Escucha siempre a tu cuerpo y a tus profesionales de salud.</p>
     </section>

@@ -42,12 +42,16 @@ export default async function rituales(root) {
         </form>`;
     }
     const done = state[mode];
-    return steps.map((s, i) => `
-      <label class="list-row" style="cursor: pointer">
-        <span class="num" style="width: 26px">${String(i + 1).padStart(2, '0')}</span>
-        <span style="flex: 1; font-size: 15px; ${done.includes(s.id) ? 'text-decoration: line-through; color: var(--muted)' : ''}">${esc(s.name)}</span>
-        <input type="checkbox" class="check" data-step="${s.id}"${done.includes(s.id) ? ' checked' : ''}>
-      </label>`).join('') || '<p class="small">Tu rutina está vacía. Toca Editar para añadir pasos.</p>';
+    const pills = steps.map((s, i) => `
+      <label class="check-pill light ${done.includes(s.id) ? 'done' : ''}" style="cursor: pointer; min-height: 48px">
+        <input type="checkbox" class="sr-only" data-step="${s.id}"${done.includes(s.id) ? ' checked' : ''}>
+        <span class="ring">${done.includes(s.id) ? icon.check({ size: 12 }) : ''}</span>
+        <span class="t" style="font-size: 15px">${esc(s.name)}</span>
+        <span class="when">${String(i + 1).padStart(2, '0')}</span>
+      </label>`).join('');
+    return pills
+      ? `<div style="display: flex; flex-direction: column; gap: 6px; padding-top: 6px">${pills}</div>`
+      : '<p class="small">Tu rutina está vacía. Toca Editar para añadir pasos.</p>';
   }
 
   const progress = () => {

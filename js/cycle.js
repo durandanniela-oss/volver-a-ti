@@ -37,10 +37,10 @@ export function phaseOf(day, stats) {
 }
 
 export const PHASE_COLORS = {
-  Menstrual: '#D9876A',
-  Folicular: '#A1CAC8',
-  Ovulatoria: '#6FA9BF',
-  Lútea: '#A385C9',
+  Menstrual: '#C8693F',
+  Folicular: '#B5C3A3',
+  Ovulatoria: '#647659',
+  Lútea: '#B99375',
 };
 
 export function cycleToday(periods, today = dayKey()) {

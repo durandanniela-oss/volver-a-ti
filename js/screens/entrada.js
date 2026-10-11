@@ -90,6 +90,12 @@ export default async function entrada(root, { params, query }) {
   </main>`;
 
   const fileInput = root.querySelector('#file');
+
+  // Desde el botón del micrófono: abre el texto listo para dictar con el teclado del teléfono.
+  if (query.get('voz')) {
+    root.querySelector('#text').focus();
+    toast('Toca el micrófono del teclado para dictar');
+  }
   const refreshPhotos = () => {
     root.querySelector('#photos').innerHTML = photosHTML();
     root.querySelector('#count').textContent = `${entry.photos.length}/${MAX_PHOTOS}`;

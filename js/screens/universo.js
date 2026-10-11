@@ -29,19 +29,19 @@ export default async function universo(root) {
       <a class="btn sm" href="#/entrada/nueva?q=${encodeURIComponent(h.question)}" style="align-self: flex-start">${icon.pen({ size: 16, sw: 1.8 })} Escribir sobre esto</a>`;
   };
 
-  const lightCard = 'background: #3A343D; border-color: rgba(247,245,240,0.12); color: var(--on-dark)';
+  const lightCard = 'background: #3E3B33; border-color: rgba(245,240,230,0.12); color: var(--on-dark)';
 
   root.innerHTML = `
   <main class="screen" style="color: var(--on-dark)">
     <header class="header"><div class="stack">
-      <span class="eyebrow" style="color: #E6DDF6">Mi universo · ${longDate(now)}</span>
+      <span class="eyebrow" style="color: #EADFCB">Mi universo · ${longDate(now)}</span>
       <h1 class="h1">Mi cielo personal</h1>
     </div></header>
 
     ${enabled ? `
     <section class="card" style="${lightCard}; align-items: center; text-align: center; padding: 24px 20px" aria-label="${esc(moon.name)}, ${Math.round(moon.illumination * 100)}% iluminada">
       ${moonSVG(moon.fraction, 150)}
-      <span class="eyebrow sm" style="color: #E6DDF6">${esc(moon.name)} · ${Math.round(moon.illumination * 100)}%</span>
+      <span class="eyebrow sm" style="color: #EADFCB">${esc(moon.name)} · ${Math.round(moon.illumination * 100)}%</span>
       <p style="margin: 0; font-size: 20px; line-height: 1.3">${esc(moon.text)}</p>
       <p class="small" style="color: var(--on-dark-muted)">Luna llena en ${Math.round(moon.daysToFull)} ${Math.round(moon.daysToFull) === 1 ? 'día' : 'días'} · Luna nueva en ${Math.round(moon.daysToNew)} ${Math.round(moon.daysToNew) === 1 ? 'día' : 'días'}</p>
       ${isIntentionMoon ? `<a class="btn sm btn-sig" href="#/entrada/nueva?q=${encodeURIComponent(moon.name === 'Luna nueva' ? '¿Qué deseo comenzar en este ciclo?' : '¿Qué quiero soltar y qué agradezco de este ciclo?')}">${icon.pen({ size: 16, sw: 1.8 })} Ritual de ${moon.name === 'Luna nueva' ? 'intención' : 'gratitud'}</a>` : ''}
@@ -73,7 +73,7 @@ export default async function universo(root) {
 
     <a class="card" href="#/carta" style="${lightCard}; text-decoration: none; flex-direction: row; align-items: center">
       <span style="flex: 1; display: flex; flex-direction: column; gap: 4px">
-        <span class="eyebrow sm" style="color: #E6DDF6">Carta ${card.code}</span>
+        <span class="eyebrow sm" style="color: #EADFCB">Carta ${card.code}</span>
         <strong style="font-size: 18px; font-weight: 500">${esc(card.title)}</strong>
         <span class="small" style="color: var(--on-dark-muted)">Tu carta del día y tus cartas guardadas</span>
       </span>

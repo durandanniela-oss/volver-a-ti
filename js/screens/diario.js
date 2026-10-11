@@ -27,6 +27,19 @@ export default async function diario(root) {
     const excerpt = entry.text.length > 140 ? `${entry.text.slice(0, 140)}…` : entry.text;
     const photos = entry.photos || [];
     const shown = photos.slice(0, photos.length > 3 ? 2 : 3);
+    // Con foto: la primera foto ocupa toda la tarjeta y el título va en una etiqueta translúcida.
+    if (photos.length) {
+      return `
+    <a class="tile photo-tile" href="#/entrada/${encodeURIComponent(entry.id)}" style="min-height: 260px">
+      <img src="${photoURL(photos[0].blob)}" alt="">
+      ${photos.length > 1 ? `<span class="badge" style="position: absolute; top: 12px; right: 12px; margin: 0">+${photos.length - 1}</span>` : ''}
+      <span class="frost-label">
+        <strong>${esc(title)}</strong>
+        ${excerpt ? `<span style="font-size: 13px; line-height: 1.35; opacity: 0.92">${esc(excerpt.length > 90 ? `${excerpt.slice(0, 90)}…` : excerpt)}</span>` : ''}
+        <span class="when">${shortDate(entry.createdAt)}</span>
+      </span>
+    </a>`;
+    }
     return `
     <a class="card entry" href="#/entrada/${encodeURIComponent(entry.id)}">
       <div class="card-row">
