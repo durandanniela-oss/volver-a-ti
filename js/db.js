@@ -1,9 +1,9 @@
 // Almacenamiento local en IndexedDB. Nada sale del dispositivo.
 const DB_NAME = 'volver-a-ti';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // Almacenes cuya clave va fuera del objeto (por ejemplo, la fecha del día).
-const KEYED_STORES = ['settings', 'checkins', 'favorites', 'cycleLogs', 'water', 'weights', 'doses', 'rituals'];
+const KEYED_STORES = ['settings', 'checkins', 'favorites', 'cycleLogs', 'water', 'weights', 'doses', 'rituals', 'evenings'];
 // Almacenes cuyos objetos llevan su propio `id`.
 const ID_STORES = ['entries', 'periods', 'workouts', 'meals', 'meds', 'appointments'];
 export const STORES = [...KEYED_STORES, ...ID_STORES];
@@ -23,8 +23,25 @@ function open() {
           if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath: 'id' });
         }
       };
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => {
+        const db = req.result;
+        // Si otra pestaña abre una versión más nueva de la app, cerramos esta
+        // conexión para no bloquear su actualización y recargamos con la nueva.
+        db.onversionchange = () => {
+          db.close();
+          location.reload();
+        };
+        resolve(db);
+      };
       req.onerror = () => reject(req.error);
+      req.onblocked = () => {
+        // Otra ventana con la versión anterior sigue abierta.
+        const toast = document.getElementById('toast');
+        if (toast) {
+          toast.textContent = 'Cierra las otras ventanas de Volver a ti para actualizar';
+          toast.classList.add('show');
+        }
+      };
     });
   }
   return dbPromise;

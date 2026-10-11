@@ -1,4 +1,5 @@
 import { getSetting } from './db.js';
+import { needsUnlock, lockScreen, watchVisibility } from './lock.js';
 import bienvenida from './screens/bienvenida.js';
 import checkin from './screens/checkin.js';
 import hoy from './screens/hoy.js';
@@ -19,12 +20,14 @@ import universo from './screens/universo.js';
 import carta from './screens/carta.js';
 import rituales from './screens/rituales.js';
 import perfil from './screens/perfil.js';
+import cierre from './screens/cierre.js';
+import semana from './screens/semana.js';
 
 const routes = {
   bienvenida, checkin, hoy,
   diario, entrada, biblioteca, pausa, mapa,
   ciclo, registro, movimiento, nutricion, cuidado, medicamento, cita, resumen,
-  universo, carta, rituales, perfil,
+  universo, carta, rituales, perfil, cierre, semana,
 };
 
 const root = document.getElementById('app');
@@ -53,6 +56,11 @@ async function render() {
     cleanup = null;
   }
 
+  if (await needsUnlock()) {
+    lockScreen(root, render);
+    return;
+  }
+
   const screen = routes[name] || hoy;
   const result = await screen(root, { params, query });
   // Si el usuario navegó mientras esta pantalla cargaba, se descarta.
@@ -65,6 +73,7 @@ async function render() {
 }
 
 window.addEventListener('hashchange', render);
+watchVisibility(render);
 render();
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {

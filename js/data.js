@@ -132,3 +132,51 @@ export function movementSuggestion(checkin) {
     : 'Según cómo te sientes hoy, esta práctica puede acompañarte bien.';
   return { ...pick, why };
 }
+
+// Cierre del día
+export const GOOD_THINGS = ['Una conversación', 'Un momento a solas', 'Moverme', 'Comer rico', 'Descansar', 'Aprender algo', 'Reír', 'Terminar algo'];
+
+// Tu fase hoy: orientación general sobre cada fase del ciclo.
+// Cada cuerpo es distinto; son sugerencias, no indicaciones médicas.
+export const PHASE_GUIDE = {
+  Menstrual: {
+    title: 'Fase menstrual',
+    feel: 'Es común sentir menos energía y más ganas de recogerte. Date permiso de ir más lento.',
+    move: 'Movimiento suave: yoga restaurativo, estiramientos o una caminata corta.',
+    eat: 'Algo caliente y reconfortante, y mucha agua.',
+    care: 'Calor en el abdomen, descanso y menos compromisos si puedes.',
+    prompt: '¿Qué necesito soltar en este ciclo que termina?',
+  },
+  Folicular: {
+    title: 'Fase folicular',
+    feel: 'Muchas personas sienten cómo vuelve la energía y la curiosidad.',
+    move: 'Buen momento para probar algo nuevo: Pilates, una clase o subir un poco la intensidad.',
+    eat: 'Comidas frescas y ligeras que te den energía.',
+    care: 'Planea, empieza proyectos y date espacio para crear.',
+    prompt: '¿Qué me gustaría empezar este ciclo?',
+  },
+  Ovulatoria: {
+    title: 'Fase ovulatoria',
+    feel: 'Suele ser una fase de más energía, ánimo social y confianza.',
+    move: 'Si te sientes bien, aprovecha para entrenar con más intensidad.',
+    eat: 'Comidas coloridas y suficiente hidratación.',
+    care: 'Buen momento para conversaciones importantes y para conectar.',
+    prompt: '¿Con quién me gustaría conectar estos días?',
+  },
+  Lútea: {
+    title: 'Fase lútea',
+    feel: 'La energía puede bajar poco a poco y la sensibilidad subir, sobre todo los días previos al periodo.',
+    move: 'Movimiento moderado: caminatas, Pilates suave o fuerza ligera.',
+    eat: 'Comidas que te sacien y te reconforten; escucha tus antojos sin culpa.',
+    care: 'Más descanso, menos exigencia y tiempo para ti.',
+    prompt: '¿Qué me está pidiendo mi cuerpo estos días?',
+  },
+};
+
+// Pregunta para la semana que empieza
+export const WEEK_QUESTIONS = [
+  '¿Qué quiero cuidar más esta semana?',
+  '¿Qué me dio energía la semana pasada y quiero repetir?',
+  '¿Qué puedo soltar para tener una semana más ligera?',
+  '¿Qué pequeño gesto quiero regalarme esta semana?',
+];

@@ -1,6 +1,7 @@
 import { getAll, put, remove, getEntries, get } from '../db.js';
 import { icon, nav, tabs, esc, dayKey, addDays, diffDays, dayMonth, toast, uid, refresh } from '../ui.js';
 import { cycleToday, phaseOf, PHASE_COLORS, energyTrend, sortPeriods } from '../cycle.js';
+import { PHASE_GUIDE } from '../data.js';
 
 export default async function ciclo(root) {
   const today = dayKey();
@@ -29,6 +30,27 @@ export default async function ciclo(root) {
       dots += `<span class="dot" style="left: ${x.toFixed(1)}px; top: ${y.toFixed(1)}px; width: ${size}px; height: ${size}px; ${style}"></span>`;
     }
     return dots;
+  }
+
+  // Tu fase hoy: qué es común sentir y qué podría acompañarte.
+  function phaseCard(phase) {
+    const g = PHASE_GUIDE[phase];
+    if (!g) return '';
+    const row = (label, text) => `<div style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line)"><span style="font-size: 12px; font-weight: 700; width: 86px; flex-shrink: 0; padding-top: 2px">${label}</span><span style="font-size: 14px; line-height: 1.4">${esc(text)}</span></div>`;
+    return `
+    <section class="card" aria-labelledby="tu-fase" style="gap: 8px">
+      <div class="card-row">
+        <h2 id="tu-fase" class="h2" style="display: flex; align-items: center; gap: 8px"><i style="width: 12px; height: 12px; border-radius: 6px; background: ${PHASE_COLORS[phase]}; display: inline-block"></i>Tu fase hoy · ${esc(g.title.replace('Fase ', ''))}</h2>
+      </div>
+      <p style="margin: 0; font-size: 16px; line-height: 1.45">${esc(g.feel)}</p>
+      <div>
+        ${row('Movimiento', g.move)}
+        ${row('Comida', g.eat)}
+        ${row('Autocuidado', g.care)}
+      </div>
+      <a class="btn sm" href="#/entrada/nueva?q=${encodeURIComponent(g.prompt)}" style="align-self: flex-start; height: auto; min-height: 44px; padding: 10px 16px; text-align: left; line-height: 1.3">${icon.pen({ size: 16, sw: 1.8 })} ${esc(g.prompt)}</a>
+      <p class="small" style="font-size: 12px">Orientación general. Cada cuerpo es distinto: escucha el tuyo.</p>
+    </section>`;
   }
 
   function nextText() {
@@ -83,7 +105,8 @@ export default async function ciclo(root) {
       <div class="legend">${Object.entries(PHASE_COLORS).map(([name, color]) => `<span><i style="background: ${color}"></i>${name}</span>`).join('')}</div>
       <p style="margin: 0; font-size: 15px; text-align: center">${nextText()}</p>
       <p class="small" style="text-align: center; font-size: 12px; max-width: 300px">Fechas y fases estimadas con tus registros${now.measured ? '' : ' (por ahora con un ciclo de 28 días; mejorará cuando registres dos periodos)'}. No son un método anticonceptivo.</p>
-    </section>` : `
+    </section>
+    ${phaseCard(now.phase)}` : `
     <section class="card card-sig">
       <span class="eyebrow sm">Empecemos</span>
       <h2 style="margin: 0; font-size: 22px; font-weight: 400">¿Cuándo empezó tu último periodo?</h2>

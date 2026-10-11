@@ -1,12 +1,14 @@
 import { getSetting, setSetting, exportAll, importAll, wipeAll, isPersisted, requestPersistence, getAll } from '../db.js';
-import { icon, esc, dayKey, toast, chips, handleChip, toggle } from '../ui.js';
+import { icon, esc, dayKey, toast, chips, handleChip, toggle, refresh } from '../ui.js';
+import { buildCalendar } from '../calendar.js';
+import { hasPin, setPin, checkPin, removePin } from '../lock.js';
 
 const GOALS = ['Dormir mejor', 'Menos ansiedad', 'Entender mi ciclo', 'Moverme con gusto', 'Escribir más', 'Comer con calma', 'Cuidarme más'];
 
-async function shareOrDownload(file) {
+async function shareOrDownload(file, title = 'Copia de Volver a ti') {
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Copia de Volver a ti' });
+      await navigator.share({ files: [file], title });
       return;
     } catch (err) {
       if (err && err.name === 'AbortError') return;
@@ -23,7 +25,7 @@ async function shareOrDownload(file) {
 }
 
 export default async function perfil(root) {
-  const [name, persisted, entries, lastBackup, goals, astrology, weight, birthDate] = await Promise.all([
+  const [name, persisted, entries, lastBackup, goals, astrology, weight, birthDate, reminders, meds, pinOn] = await Promise.all([
     getSetting('name', ''),
     isPersisted(),
     getAll('entries'),
@@ -32,6 +34,9 @@ export default async function perfil(root) {
     getSetting('astrologyEnabled', true),
     getSetting('weightEnabled', false),
     getSetting('birthDate', ''),
+    getSetting('reminders', { checkinTime: '08:30', eveningTime: '21:30', includeMeds: true, showNames: false }),
+    getAll('meds'),
+    hasPin(),
   ]);
   const state = { goals: [...goals] };
   const photoCount = entries.reduce((n, e) => n + (e.photos?.length || 0), 0);
@@ -65,6 +70,33 @@ export default async function perfil(root) {
         <input type="date" class="mini-input" id="birthDate" value="${esc(birthDate)}" style="width: 160px"></label>
     </section>
 
+    <form class="card" id="reminders-form" aria-labelledby="recordatorios">
+      <h2 id="recordatorios" class="h2">Recordatorios en tu Calendario</h2>
+      <p class="small">La app crea eventos diarios con aviso. Agrégalos una vez al Calendario de Apple y te avisará a la hora, también en tu Apple Watch.</p>
+      <div class="form-grid">
+        <div class="field"><label for="checkinTime">Check-in</label><input class="mini-input" id="checkinTime" type="time" value="${esc(reminders.checkinTime || '')}"></div>
+        <div class="field"><label for="eveningTime">Cierre del día</label><input class="mini-input" id="eveningTime" type="time" value="${esc(reminders.eveningTime || '')}"></div>
+      </div>
+      ${toggle('includeMeds', reminders.includeMeds, `Mis tomas de medicamentos${meds.filter((m) => m.active && m.frequency === 'Diario').length ? '' : ' (aún no tienes)'}`)}
+      ${toggle('showNames', reminders.showNames, 'Mostrar el nombre del medicamento')}
+      <button class="btn" type="submit">${icon.share()} Agregar al Calendario</button>
+      <p class="small" style="font-size: 12px">Si cambias tus horarios o medicamentos, vuelve a agregarlos y borra los anteriores en el Calendario.</p>
+    </form>
+
+    <form class="card" id="pin-form" aria-labelledby="bloqueo">
+      <h2 id="bloqueo" class="h2" style="display: flex; align-items: center; gap: 8px">${icon.lock({ size: 16 })} Bloqueo con código</h2>
+      <p class="small">${pinOn ? 'Activo. La app pide tu código al abrirla y si estuvo en segundo plano más de un minuto.' : 'Pide un código de 4 números para abrir la app. Si lo olvidas, tendrás que borrar los datos y restaurar una copia.'}</p>
+      ${pinOn ? '<div class="field"><label for="pin-current">Código actual</label><input class="mini-input" id="pin-current" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off"></div>' : ''}
+      <div class="form-grid">
+        <div class="field"><label for="pin-new">${pinOn ? 'Nuevo código' : 'Código'}</label><input class="mini-input" id="pin-new" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off"></div>
+        <div class="field"><label for="pin-repeat">Repítelo</label><input class="mini-input" id="pin-repeat" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off"></div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <button class="btn sm" type="submit">${pinOn ? 'Cambiar código' : 'Activar código'}</button>
+        ${pinOn ? '<button class="btn sm btn-ghost" type="button" id="pin-remove">Quitar código</button>' : ''}
+      </div>
+    </form>
+
     <section class="card card-dark" aria-labelledby="datos">
       <h2 id="datos" class="h2" style="display: flex; align-items: center; gap: 8px">${icon.lock({ size: 16 })} Tus datos</h2>
       <p class="small" style="font-size: 14px">Todo se guarda solo en este dispositivo: ${entries.length} ${entries.length === 1 ? 'entrada' : 'entradas'} y ${photoCount} ${photoCount === 1 ? 'foto' : 'fotos'}. Nadie más puede verlos, pero si borras los datos de Safari o cambias de teléfono, se pierden. Haz una copia de vez en cuando.</p>
@@ -80,16 +112,68 @@ export default async function perfil(root) {
 
   if (!persisted) requestPersistence();
 
+  const value = (sel) => root.querySelector(sel)?.value.trim() || '';
+
   const onSubmit = async (event) => {
-    if (event.target.id !== 'name-form') return;
+    const { id } = event.target;
+    if (!['name-form', 'reminders-form', 'pin-form'].includes(id)) return;
     event.preventDefault();
-    await setSetting('name', root.querySelector('#name').value.trim());
-    toast('Nombre guardado');
+    if (id === 'name-form') {
+      await setSetting('name', value('#name'));
+      toast('Nombre guardado');
+      return;
+    }
+    if (id === 'reminders-form') {
+      const options = {
+        checkinTime: value('#checkinTime'),
+        eveningTime: value('#eveningTime'),
+        includeMeds: root.querySelector('#includeMeds').checked,
+        showNames: root.querySelector('#showNames').checked,
+      };
+      await setSetting('reminders', options);
+      const ics = buildCalendar({ ...options, meds });
+      const file = new File([ics], 'volver-a-ti-recordatorios.ics', { type: 'text/calendar' });
+      // En iPhone, abrir el archivo muestra "Agregar todo" al Calendario.
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await shareOrDownload(file, 'Recordatorios de Volver a ti');
+      } else {
+        location.href = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
+      }
+      return;
+    }
+    // Código de bloqueo
+    const next = value('#pin-new');
+    if (pinOn && !(await checkPin(value('#pin-current')))) {
+      toast('El código actual no es correcto');
+      return;
+    }
+    if (!/^[0-9]{4}$/.test(next)) {
+      toast('El código debe tener 4 números');
+      return;
+    }
+    if (next !== value('#pin-repeat')) {
+      toast('Los códigos no coinciden');
+      return;
+    }
+    await setPin(next);
+    toast(pinOn ? 'Código cambiado' : 'Código activado');
+    refresh();
   };
 
   const onClick = async (event) => {
     if (handleChip(event, root, state)) {
       await setSetting('goals', state.goals);
+      return;
+    }
+    if (event.target.closest('#pin-remove')) {
+      if (!(await checkPin(value('#pin-current')))) {
+        toast('Escribe tu código actual para quitarlo');
+        root.querySelector('#pin-current').focus();
+        return;
+      }
+      await removePin();
+      toast('Código quitado');
+      refresh();
       return;
     }
     if (event.target.closest('#export')) {
@@ -111,6 +195,7 @@ export default async function perfil(root) {
 
   const onChange = async (event) => {
     const { id } = event.target;
+    if (id === 'includeMeds' || id === 'showNames') return;
     if (id === 'astrologyEnabled' || id === 'weightEnabled') {
       await setSetting(id, event.target.checked);
       toast('Preferencia guardada');

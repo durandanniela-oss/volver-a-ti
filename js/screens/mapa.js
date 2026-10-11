@@ -1,5 +1,5 @@
 import { getEntries, getAll } from '../db.js';
-import { nav, tabs, esc, dayKey, lastDays, weekdayInitial, parseKey } from '../ui.js';
+import { icon, nav, tabs, esc, dayKey, lastDays, weekdayInitial, parseKey } from '../ui.js';
 import { STOPWORDS } from '../data.js';
 import { energyTrend } from '../cycle.js';
 
@@ -96,6 +96,13 @@ export default async function mapa(root) {
       <p class="lead" style="font-size: 15px">Para comprender tus emociones, no para calificarlas.</p>
     </div></header>
     ${tabs('bienestar', 'mapa')}
+    <a class="card card-sig" href="#/semana" style="text-decoration: none; color: inherit; flex-direction: row; align-items: center; padding: 14px 18px">
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span class="eyebrow sm">Resumen</span>
+        <strong style="font-size: 17px; font-weight: 500">Tu semana</strong>
+      </span>
+      ${icon.chevron()}
+    </a>
     <div class="seg" role="group" aria-label="Periodo">
       <button type="button" data-range="Semana" aria-pressed="true">Semana</button>
       <button type="button" data-range="Mes" aria-pressed="false">Mes</button>

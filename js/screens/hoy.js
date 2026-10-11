@@ -1,6 +1,6 @@
 import { get, put, getAll, getEntries, getSetting, setSetting } from '../db.js';
 import { icon, nav, esc, dayKey, dayOfYear, longDate, toast, uid, refresh, dotRing, timeAgo } from '../ui.js';
-import { MOOD_ADJ, cardOfDay, energyMessage, movementSuggestion, PROMPTS } from '../data.js';
+import { MOOD_ADJ, cardOfDay, energyMessage, movementSuggestion, PROMPTS, PHASE_GUIDE } from '../data.js';
 import { cycleToday, PHASE_COLORS } from '../cycle.js';
 import { scheduledFor } from '../meds.js';
 
@@ -21,11 +21,13 @@ const timeNow = () => {
 
 export default async function hoy(root) {
   const today = dayKey();
-  const [checkin, name, periods, cycleLog, meds, doseList, ritualDay, skincare, entries, tipsSeen] = await Promise.all([
+  const [checkin, name, periods, cycleLog, meds, doseList, ritualDay, skincare, entries, tipsSeen, evening] = await Promise.all([
     get('checkins', today), getSetting('name', ''), getAll('periods'), get('cycleLogs', today),
     getAll('meds'), getEntries('doses'), get('rituals', today), getSetting('skincare', null), getAll('entries'),
-    getSetting('tipsSeen', false),
+    getSetting('tipsSeen', false), get('evenings', today),
   ]);
+  const hour = new Date().getHours();
+  const isSunday = new Date().getDay() === 0;
   const doses = Object.fromEntries(doseList);
   const card = cardOfDay(dayOfYear());
   const prompt = PROMPTS[dayOfYear() % PROMPTS.length];
@@ -43,6 +45,7 @@ export default async function hoy(root) {
   const todo = [
     ...(!checkin ? [{ href: '#/checkin', label: 'Check-in de hoy', done: false }] : []),
     ...scheduledFor(meds, today).map((d) => ({ key: d.key, label: d.med.name, when: d.time, done: doses[d.key]?.status === 'taken' })),
+    ...(hour >= 18 ? [{ href: '#/cierre', label: 'Cierre del día', done: !!evening }] : []),
     ...(steps.length ? [{ href: '#/rituales', label: `Rutina de ${mode === 'morning' ? 'mañana' : 'noche'}`, when: `${doneSteps}/${steps.length}`, done: doneSteps === steps.length }] : [{ href: '#/rituales', label: 'Configura tus rituales', done: false }]),
   ].slice(0, 5);
 
@@ -60,6 +63,8 @@ export default async function hoy(root) {
   if (!checkin) nextStep = { title: '¿Cómo te sientes hoy?', text: 'Haz tu check-in. Toma menos de un minuto.', href: '#/checkin', action: 'Empezar' };
   else if (dueDose) nextStep = { title: `${dueDose.med.name} · ${dueDose.time}`, text: 'Es hora de tu toma. Márcala cuando la tomes.', take: dueDose.key, action: 'Ya la tomé' };
   else if (anxious) nextStep = { title: 'Respira 3 minutos', text: 'Registraste ansiedad. Una pausa corta puede ayudarte.', href: '#/pausa/ansiedad', action: 'Respirar' };
+  else if (hour >= 19 && !evening) nextStep = { title: 'Cierra tu día', text: 'Tres preguntas cortas antes de dormir.', href: '#/cierre', action: 'Empezar' };
+  else if (isSunday && hour >= 12) nextStep = { title: 'Tu semana', text: 'Mira cómo estuviste estos siete días.', href: '#/semana', action: 'Ver' };
   else if (!wroteToday) nextStep = { title: 'Escribe dos líneas', text: prompt, href: '#/entrada/nueva?prompt=1', action: 'Escribir' };
   else nextStep = { title: 'Todo listo por hoy', text: 'Hiciste tu check-in y escribiste. Disfruta tu día.', href: '#/carta', action: 'Ver tu carta' };
 
@@ -121,6 +126,13 @@ export default async function hoy(root) {
       <span><strong style="display: block; font-size: 15px; font-weight: 600">Fase ${cycle.phase.toLowerCase()}</strong>
       <span class="small" style="font-size: 12px">${cycle.daysToNext >= 0 ? `Periodo en ~${cycle.daysToNext} días` : 'Fuera de tu promedio'}</span></span>` : `
       <strong style="font-size: 16px; font-weight: 500">Registra tu ciclo</strong>`}
+    </a>`,
+
+    cycle && PHASE_GUIDE[cycle.phase] && `
+    <a class="tile tile-glass span-2" data-cat="cuerpo" href="#/ciclo" style="min-height: 0">
+      <span class="eyebrow sm" style="display: flex; align-items: center; gap: 6px"><i style="width: 10px; height: 10px; border-radius: 5px; background: ${PHASE_COLORS[cycle.phase]}; display: inline-block"></i>Tu fase hoy · ${esc(cycle.phase.toLowerCase())}</span>
+      <span style="font-size: 15px; line-height: 1.4">${esc(PHASE_GUIDE[cycle.phase].feel)}</span>
+      <span class="small" style="font-size: 13px">${esc(PHASE_GUIDE[cycle.phase].move)}</span>
     </a>`,
 
     `<a class="tile tile-sig span-2" data-cat="universo" href="#/carta" style="min-height: 170px; justify-content: space-between">

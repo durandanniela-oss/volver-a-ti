@@ -477,3 +477,19 @@ body.dark .nav { background: #3E3B33; border: 1px solid rgba(245, 240, 230, 0.12
   .screen > *, .pause > *, .bento > *, .step, .done-mark, .check-pill.done .ring { animation: none !important; }
   .btn:active, .cta:active, .chip:active, .check-pill:active, a.tile:active { transform: none; }
 }
+
+/* ---------- Pantalla de código ---------- */
+.lock { min-height: 100vh; }
+.pin-dots { display: flex; gap: 16px; }
+.pin-dots i { width: 16px; height: 16px; border-radius: 8px; border: 1.5px solid var(--ink); transition: background 0.15s, transform 0.15s; }
+.pin-dots i.on { background: var(--ink); transform: scale(1.1); }
+.pin-dots.shake { animation: shake 0.4s; }
+@keyframes shake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 16px; }
+.pin-pad button {
+  width: 72px; height: 72px; border-radius: 36px; border: 1px solid var(--glass-border); background: var(--glass);
+  font-family: var(--dot); font-weight: 800; font-size: 26px; color: var(--ink); display: flex; align-items: center; justify-content: center;
+  transition: transform 0.12s, background 0.15s;
+}
+.pin-pad button:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.9); }
+.pin-pad .pin-text { font-family: var(--font); font-weight: 600; font-size: 14px; background: transparent; border: none; }
