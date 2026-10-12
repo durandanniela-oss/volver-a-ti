@@ -99,3 +99,108 @@ export function horoscope(period, date, signIndex = 0) {
 }
 
 export const SIGN_NAMES = SIGNS.slice(0, 12).map(([name]) => name);
+
+// ---------- Tránsitos aproximados (Sol y Luna) ----------
+// Fórmulas astronómicas simplificadas: precisión de 1–2 grados, suficiente
+// para saber en qué signo está la Luna y qué aspecto forma con tu Sol natal.
+
+const rad = (deg) => (deg * Math.PI) / 180;
+const norm = (deg) => ((deg % 360) + 360) % 360;
+const daysSinceJ2000 = (date) => (date.getTime() - Date.UTC(2000, 0, 1, 12)) / 86400000;
+
+export function sunLongitude(date) {
+  const d = daysSinceJ2000(date);
+  const g = rad(357.528 + 0.9856003 * d);
+  return norm(280.46 + 0.9856474 * d + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g));
+}
+
+export function moonLongitude(date) {
+  const d = daysSinceJ2000(date);
+  const L = 218.316 + 13.176396 * d;
+  const M = rad(134.963 + 13.064993 * d);
+  const D = rad(297.85 + 12.190749 * d);
+  const Ms = rad(357.529 + 0.98560028 * d);
+  return norm(L + 6.289 * Math.sin(M) + 1.274 * Math.sin(2 * D - M) + 0.658 * Math.sin(2 * D) - 0.186 * Math.sin(Ms));
+}
+
+export const ZODIAC = ['Aries', 'Tauro', 'Géminis', 'Cáncer', 'Leo', 'Virgo', 'Libra', 'Escorpio', 'Sagitario', 'Capricornio', 'Acuario', 'Piscis'];
+export const signOf = (lon) => ZODIAC[Math.floor(norm(lon) / 30)];
+
+const ASPECTS = [
+  { angle: 0, name: 'conjunción con', kind: 'Inicio' },
+  { angle: 60, name: 'sextil con', kind: 'Oportunidad' },
+  { angle: 90, name: 'cuadratura con', kind: 'Reto' },
+  { angle: 120, name: 'trígono con', kind: 'Oportunidad' },
+  { angle: 180, name: 'oposición a', kind: 'Reto' },
+];
+
+function aspectBetween(a, b, maxOrb) {
+  const diff = Math.abs(norm(a - b));
+  const sep = diff > 180 ? 360 - diff : diff;
+  let best = null;
+  for (const asp of ASPECTS) {
+    const orb = Math.abs(sep - asp.angle);
+    if (orb <= maxOrb && (!best || orb < best.orb)) best = { ...asp, orb };
+  }
+  return best;
+}
+
+// Busca hacia atrás y hacia adelante cuándo empieza y termina un aspecto.
+function windowFor(bodyLon, natal, aspect, maxOrb, date, stepHours, limitSteps) {
+  const inOrb = (t) => {
+    const a = aspectBetween(bodyLon(t), natal, maxOrb);
+    return a && a.angle === aspect.angle;
+  };
+  let start = new Date(date);
+  let end = new Date(date);
+  for (let i = 0; i < limitSteps; i++) {
+    const t = new Date(start.getTime() - stepHours * 3600e3);
+    if (!inOrb(t)) break;
+    start = t;
+  }
+  for (let i = 0; i < limitSteps; i++) {
+    const t = new Date(end.getTime() + stepHours * 3600e3);
+    if (!inOrb(t)) break;
+    end = t;
+  }
+  return { start, end };
+}
+
+// Tránsitos del día respecto a tu Sol natal (se calcula al mediodía de tu nacimiento).
+export function transitsFor(birthDate, date = new Date()) {
+  if (!birthDate) return [];
+  const [y, m, d] = birthDate.split('-').map(Number);
+  const natalSun = sunLongitude(new Date(Date.UTC(y, m - 1, d, 12)));
+  const list = [];
+  const moonAsp = aspectBetween(moonLongitude(date), natalSun, 8);
+  if (moonAsp) {
+    list.push({
+      body: 'Luna', ...moonAsp,
+      label: `Luna en ${moonAsp.name} tu Sol`,
+      intensity: Math.max(1, 5 - Math.floor(moonAsp.orb / 2)),
+      ...windowFor(moonLongitude, natalSun, moonAsp, 8, date, 3, 24),
+    });
+  }
+  const sunAsp = aspectBetween(sunLongitude(date), natalSun, 3);
+  if (sunAsp) {
+    list.push({
+      body: 'Sol', ...sunAsp,
+      label: sunAsp.angle === 0 ? 'Tu retorno solar' : `Sol en ${sunAsp.name} tu Sol`,
+      intensity: Math.max(2, 5 - Math.floor(sunAsp.orb)),
+      ...windowFor(sunLongitude, natalSun, sunAsp, 3, date, 12, 20),
+    });
+  }
+  return list.sort((a, b) => b.intensity - a.intensity);
+}
+
+// Próximos días: el tránsito principal de cada día.
+export function upcomingTransits(birthDate, days = 7) {
+  const out = [];
+  for (let i = 1; i <= days; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+    date.setHours(12, 0, 0, 0);
+    out.push({ date, moonSign: signOf(moonLongitude(date)), main: transitsFor(birthDate, date)[0] || null });
+  }
+  return out;
+}

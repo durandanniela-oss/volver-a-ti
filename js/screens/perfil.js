@@ -25,7 +25,7 @@ async function shareOrDownload(file, title = 'Copia de Volver a ti') {
 }
 
 export default async function perfil(root) {
-  const [name, persisted, entries, lastBackup, goals, astrology, weight, birthDate, reminders, meds, pinOn] = await Promise.all([
+  const [name, persisted, entries, lastBackup, goals, astrology, weight, birthDate, reminders, meds, pinOn, birthTime] = await Promise.all([
     getSetting('name', ''),
     isPersisted(),
     getAll('entries'),
@@ -37,6 +37,7 @@ export default async function perfil(root) {
     getSetting('reminders', { checkinTime: '08:30', eveningTime: '21:30', includeMeds: true, showNames: false }),
     getAll('meds'),
     hasPin(),
+    getSetting('birthTime', ''),
   ]);
   const state = { goals: [...goals] };
   const photoCount = entries.reduce((n, e) => n + (e.photos?.length || 0), 0);
@@ -68,6 +69,8 @@ export default async function perfil(root) {
       ${toggle('weightEnabled', weight, 'Registro de peso (opcional)')}
       <label class="switch-row" for="birthDate"><span>Fecha de nacimiento<span class="small" style="display: block; font-size: 12px">Para tu signo solar</span></span>
         <input type="date" class="mini-input" id="birthDate" value="${esc(birthDate)}" style="width: 160px"></label>
+      <label class="switch-row" for="birthTime"><span>Hora de nacimiento<span class="small" style="display: block; font-size: 12px">Opcional, para tu Luna natal</span></span>
+        <input type="time" class="mini-input" id="birthTime" value="${esc(birthTime)}" style="width: 160px"></label>
     </section>
 
     <form class="card" id="reminders-form" aria-labelledby="recordatorios">
@@ -204,6 +207,11 @@ export default async function perfil(root) {
     if (id === 'birthDate') {
       await setSetting('birthDate', event.target.value);
       toast('Fecha guardada');
+      return;
+    }
+    if (id === 'birthTime') {
+      await setSetting('birthTime', event.target.value);
+      toast('Hora guardada');
       return;
     }
     if (id !== 'import-file') return;

@@ -1,90 +1,171 @@
 import { getSetting } from '../db.js';
-import { icon, nav, esc, longDate, dayOfYear, parseKey } from '../ui.js';
-import { moonPhase, moonSVG, sunSign, horoscope, SIGN_NAMES } from '../astro.js';
+import { icon, nav, esc, longDate, dayOfYear, parseKey, dayKey } from '../ui.js';
+import { moonPhase, moonSVG, sunSign, horoscope, SIGN_NAMES, moonLongitude, signOf, upcomingTransits } from '../astro.js';
 import { cardOfDay } from '../data.js';
+import { dailyReadings } from '../lecturas.js';
+import { lineArt } from '../lineart.js';
 
-export default async function universo(root) {
-  const [enabled, birthDate] = await Promise.all([getSetting('astrologyEnabled', true), getSetting('birthDate', '')]);
+const DAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+
+// Carta alta con dibujo de línea, etiqueta vertical y área abajo.
+export function readingCard(r, href) {
+  const plus = '+'.repeat(r.intensity);
+  return `
+  <a class="af-card ${r.type.toLowerCase()}" href="${href}">
+    <span class="side af-caps">${esc(r.type)}</span>
+    <span class="face">
+      <span class="badge-int" aria-label="Intensidad ${r.intensity} de 5">${plus}</span>
+      <span class="art">${lineArt(r.area.art, 104)}</span>
+      <span class="hint">Toca para leer</span>
+      <span style="color: var(--muted); opacity: 0.8">${lineArt('sol', 26)}</span>
+      <span class="area af-caps">${esc(r.area.name)}</span>
+    </span>
+  </a>`;
+}
+
+export default async function universo(root, { query }) {
+  const [enabled, birthDate, birthTime] = await Promise.all([
+    getSetting('astrologyEnabled', true), getSetting('birthDate', ''), getSetting('birthTime', ''),
+  ]);
   const now = new Date();
   const moon = moonPhase(now);
+  const moonSign = signOf(moonLongitude(now));
   const sign = birthDate ? sunSign(parseKey(birthDate)) : null;
   const signIndex = sign ? SIGN_NAMES.indexOf(sign) : 0;
   const card = cardOfDay(dayOfYear());
-  const isIntentionMoon = moon.name === 'Luna nueva' || moon.name === 'Luna llena';
+  const readings = dailyReadings(birthDate, now);
+  const main = readings[0].transit;
+  let view = query.get('vista') === 'proximos' ? 'proximos' : 'hoy';
   let period = 'Día';
 
-  document.body.classList.add('dark');
+  // Luna natal: con hora de nacimiento es más precisa; sin hora, se calcula al mediodía.
+  let natalMoon = null;
+  if (birthDate) {
+    const [y, m, d] = birthDate.split('-').map(Number);
+    const [hh, mm] = (birthTime || '12:00').split(':').map(Number);
+    natalMoon = signOf(moonLongitude(new Date(y, m - 1, d, hh, mm)));
+  }
 
   const horoscopeHTML = () => {
     const h = horoscope(period, now, signIndex);
     return `
-      <p style="margin: 0; font-size: 19px; line-height: 1.35">${esc(h.text)}</p>
-      <div style="border-radius: 20px; background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.9)">
-        ${[['Intención', h.intention], ['Pregunta', h.question], ['Acción', h.action]].map(([k, v], i) => `
-        <div style="display: flex; gap: 12px; padding: 12px 14px; ${i ? 'border-top: 1px solid var(--line)' : ''}">
-          <span style="font-size: 12px; font-weight: 700; width: 70px; flex-shrink: 0; padding-top: 2px">${k}</span>
-          <span style="font-size: 14px; line-height: 1.4">${esc(v)}</span>
+      <p style="margin: 0; font-family: var(--serif-af); font-size: 22px; line-height: 1.35">${esc(h.text)}</p>
+      <div>
+        ${[['Intención', h.intention], ['Pregunta', h.question], ['Acción', h.action]].map(([k, v]) => `
+        <div style="display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--af-line)">
+          <span class="af-caps" style="font-size: 12px; width: 82px; flex-shrink: 0; padding-top: 2px">${k}</span>
+          <span style="font-size: 15px; line-height: 1.4">${esc(v)}</span>
         </div>`).join('')}
       </div>
       <a class="btn sm" href="#/entrada/nueva?q=${encodeURIComponent(h.question)}" style="align-self: flex-start">${icon.pen({ size: 16, sw: 1.8 })} Escribir sobre esto</a>`;
   };
 
-  const lightCard = 'background: #3E3B33; border-color: rgba(245,240,230,0.12); color: var(--on-dark)';
+  const windowText = (t) => {
+    if (!t) return '';
+    const hours = Math.round((t.end - t.start) / 3600e3);
+    return hours > 48 ? `próximos ${Math.round(hours / 24)} días` : hours > 20 ? 'hoy y mañana' : 'hoy';
+  };
 
-  root.innerHTML = `
-  <main class="screen" style="color: var(--on-dark)">
-    <header class="header"><div class="stack">
-      <span class="eyebrow" style="color: #EADFCB">Mi universo · ${longDate(now)}</span>
-      <h1 class="h1">Mi cielo personal</h1>
-    </div></header>
-
-    ${enabled ? `
-    <section class="card" style="${lightCard}; align-items: center; text-align: center; padding: 24px 20px" aria-label="${esc(moon.name)}, ${Math.round(moon.illumination * 100)}% iluminada">
-      ${moonSVG(moon.fraction, 150)}
-      <span class="eyebrow sm" style="color: #EADFCB">${esc(moon.name)} · ${Math.round(moon.illumination * 100)}%</span>
-      <p style="margin: 0; font-size: 20px; line-height: 1.3">${esc(moon.text)}</p>
-      <p class="small" style="color: var(--on-dark-muted)">Luna llena en ${Math.round(moon.daysToFull)} ${Math.round(moon.daysToFull) === 1 ? 'día' : 'días'} · Luna nueva en ${Math.round(moon.daysToNew)} ${Math.round(moon.daysToNew) === 1 ? 'día' : 'días'}</p>
-      ${isIntentionMoon ? `<a class="btn sm btn-sig" href="#/entrada/nueva?q=${encodeURIComponent(moon.name === 'Luna nueva' ? '¿Qué deseo comenzar en este ciclo?' : '¿Qué quiero soltar y qué agradezco de este ciclo?')}">${icon.pen({ size: 16, sw: 1.8 })} Ritual de ${moon.name === 'Luna nueva' ? 'intención' : 'gratitud'}</a>` : ''}
+  const todayHTML = () => `
+    <section class="af-card" style="display: flex; min-height: 0; align-items: center; gap: 16px; padding: 16px 18px" aria-label="${esc(moon.name)} en ${esc(moonSign)}">
+      ${moonSVG(moon.fraction, 56)}
+      <span style="display: flex; flex-direction: column; gap: 4px">
+        <span class="af-caps" style="font-size: 13px">${esc(moon.name)} en ${esc(moonSign)}</span>
+        <span style="font-size: 14px; line-height: 1.4; color: var(--muted)">${esc(moon.text)}</span>
+      </span>
     </section>
 
-    <div class="grid-2" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-      ${[['Sol', sign], ['Luna', null], ['Ascendente', null]].map(([label, value]) => `
-      <div class="card" style="${lightCard}; padding: 14px 12px; gap: 4px">
-        <span class="small" style="color: var(--on-dark-muted); font-weight: 600; font-size: 12px">${label}</span>
-        <strong style="font-size: ${value ? 17 : 13}px; font-weight: 500">${value ? esc(value) : label === 'Sol' ? 'Añade tu fecha' : 'Próximamente'}</strong>
-      </div>`).join('')}
-    </div>
-    ${sign ? '' : '<p class="small" style="color: var(--on-dark-muted); padding: 0 6px">Añade tu fecha de nacimiento en <a href="#/perfil" style="color: var(--on-dark)">Mi perfil</a> para ver tu signo solar. Luna y ascendente necesitan hora y lugar de nacimiento, y llegarán más adelante.</p>'}
+    ${main ? `
+    <p class="af-italic" style="margin: 0; text-align: center; font-size: 18px">Tu tránsito principal: ${esc(main.label)} · ${windowText(main)}</p>` : birthDate ? `
+    <p class="af-italic" style="margin: 0; text-align: center; font-size: 18px">Hoy la Luna no forma aspectos fuertes con tu Sol. Un día para observar.</p>` : `
+    <a class="link-pill" href="#/perfil" style="align-self: center">Añade tu fecha de nacimiento para lecturas personales</a>`}
 
-    <section class="card card-sig" style="color: var(--ink)" aria-labelledby="horo">
+    <section aria-label="Tus lecturas de hoy" style="display: flex; flex-direction: column; gap: 12px">
+      ${readings.map((r) => readingCard(r, `#/lectura/${r.area.id}`)).join('')}
+    </section>
+
+    <section aria-labelledby="natal" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+      <h2 id="natal" class="af-caps" style="margin: 0; text-align: center; font-size: 15px">Tu carta natal</h2>
+      <div class="af-natal">
+        <a href="#/perfil"><span class="glyph" aria-hidden="true">☉</span><span class="what">Tu identidad esencial</span><span class="name af-caps">${sign ? esc(sign) : 'Añade tu fecha'}</span></a>
+        <a href="#/perfil"><span class="glyph" aria-hidden="true">☽</span><span class="what">Tus emociones${natalMoon && !birthTime ? ' (aprox.)' : ''}</span><span class="name af-caps">${natalMoon ? esc(natalMoon) : 'Añade tu fecha'}</span></a>
+        <div><span class="glyph" aria-hidden="true">↑</span><span class="what">Cómo te ven</span><span class="name af-caps" style="font-size: 11px">Próximamente</span></div>
+      </div>
+      ${birthDate && !birthTime ? '<p class="small" style="text-align: center; font-size: 12px">Añade tu hora de nacimiento en Mi perfil para precisar tu Luna.</p>' : ''}
+    </section>
+
+    <section class="af-card" style="display: flex; flex-direction: column; min-height: 0; padding: 20px 18px; gap: 14px" aria-labelledby="horo">
       <div class="card-row">
-        <h2 id="horo" class="eyebrow sm" style="margin: 0">Mi energía cósmica</h2>
-        <div class="seg" role="group" aria-label="Periodo del horóscopo" style="background: rgba(255,255,255,0.5); padding: 3px">
+        <h2 id="horo" class="af-caps" style="margin: 0; font-size: 14px">Tu energía cósmica</h2>
+        <div class="seg" role="group" aria-label="Periodo del horóscopo" style="padding: 3px">
           ${['Día', 'Semana', 'Mes'].map((p) => `<button type="button" data-period="${p}" aria-pressed="${p === period}" style="height: 32px; padding: 0 10px; font-size: 12px">${p}</button>`).join('')}
         </div>
       </div>
       <div id="horoscope" style="display: flex; flex-direction: column; gap: 14px">${horoscopeHTML()}</div>
-    </section>` : `
-    <section class="card" style="${lightCard}">
-      <h2 class="h2">La astrología está oculta</h2>
-      <p class="small" style="color: var(--on-dark-muted)">Puedes activarla cuando quieras en Mi perfil.</p>
-      <a class="btn sm btn-sig" href="#/perfil" style="align-self: flex-start">Ir a Mi perfil</a>
-    </section>`}
+    </section>
 
-    <a class="card" href="#/carta" style="${lightCard}; text-decoration: none; flex-direction: row; align-items: center">
-      <span style="flex: 1; display: flex; flex-direction: column; gap: 4px">
-        <span class="eyebrow sm" style="color: #EADFCB">Carta ${card.code}</span>
-        <strong style="font-size: 18px; font-weight: 500">${esc(card.title)}</strong>
-        <span class="small" style="color: var(--on-dark-muted)">Tu carta del día y tus cartas guardadas</span>
+    <a class="af-card" href="#/carta" style="display: flex; min-height: 0; align-items: center; gap: 14px; padding: 16px 18px">
+      <span class="art">${lineArt('sol', 40)}</span>
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span class="af-caps" style="font-size: 12px; color: var(--muted)">Carta ${card.code}</span>
+        <strong class="af-title" style="font-size: 22px">Tu carta del día</strong>
       </span>
       ${icon.chevron()}
-    </a>
+    </a>`;
 
-    <p class="small" style="color: var(--on-dark-muted); padding: 0 6px; font-size: 12px">La astrología es aquí una herramienta de reflexión y entretenimiento, no una explicación científica de tu salud o tus emociones.</p>
+  const upcomingHTML = () => {
+    const days = upcomingTransits(birthDate, 7);
+    return `
+    <section class="af-card" style="display: block; min-height: 0; padding: 4px 18px" aria-label="Próximos días">
+      ${days.map((d) => {
+        const key = dayKey(d.date);
+        const r = dailyReadings(birthDate, d.date, 1)[0];
+        return `
+        <a class="af-day" href="#/lectura/${r.area.id}?fecha=${key}">
+          <span style="text-align: center">
+            <span class="af-title" style="display: block; font-size: 28px">${d.date.getDate()}</span>
+            <span class="af-caps" style="font-size: 11px; color: var(--muted)">${DAYS[d.date.getDay()]}</span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 3px">
+            <span class="af-caps" style="font-size: 12px; color: ${r.type === 'Reto' ? '#A65A44' : r.type === 'Oportunidad' ? '#647659' : 'var(--muted)'}">${esc(r.type)} · ${esc(r.area.name)}</span>
+            <span style="font-size: 15px">${esc(r.reading.title)}</span>
+            <span class="af-italic" style="font-size: 14px; color: var(--muted)">${esc(d.main ? d.main.label : `Luna en ${d.moonSign}`)}</span>
+          </span>
+          <span style="font-size: 13px; letter-spacing: 0.05em" aria-label="Intensidad ${r.intensity} de 5">${'+'.repeat(r.intensity)}</span>
+        </a>`;
+      }).join('')}
+    </section>`;
+  };
+
+  root.innerHTML = `
+  <main class="screen">
+    <header style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 4px">
+      <h1 class="af-wordmark">mi universo</h1>
+      <span class="eyebrow sm">${longDate(now)}</span>
+    </header>
+    ${enabled ? `
+    <div class="af-toggle" role="group" aria-label="Ver">
+      <button type="button" data-view="hoy" aria-pressed="${view === 'hoy'}">Hoy</button>
+      <button type="button" data-view="proximos" aria-pressed="${view === 'proximos'}">Próximos días</button>
+    </div>
+    <div id="view" style="display: flex; flex-direction: column; gap: 14px">${view === 'hoy' ? todayHTML() : upcomingHTML()}</div>` : `
+    <section class="af-card" style="display: flex; flex-direction: column; min-height: 0; padding: 20px">
+      <h2 class="af-title" style="font-size: 24px">La astrología está oculta</h2>
+      <p class="small">Puedes activarla cuando quieras en Mi perfil.</p>
+      <a class="btn sm" href="#/perfil" style="align-self: flex-start">Ir a Mi perfil</a>
+    </section>`}
+    <p class="small" style="padding: 0 6px; font-size: 12px; text-align: center">La astrología es aquí una herramienta de reflexión y entretenimiento. Los tránsitos se calculan de forma aproximada con la posición del Sol y la Luna.</p>
   </main>
   ${nav('universo')}`;
 
   const onClick = (event) => {
+    const viewBtn = event.target.closest('[data-view]');
+    if (viewBtn) {
+      view = viewBtn.dataset.view;
+      root.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+      root.querySelector('#view').innerHTML = view === 'hoy' ? todayHTML() : upcomingHTML();
+      return;
+    }
     const btn = event.target.closest('[data-period]');
     if (!btn) return;
     period = btn.dataset.period;
@@ -92,8 +173,5 @@ export default async function universo(root) {
     root.querySelector('#horoscope').innerHTML = horoscopeHTML();
   };
   root.addEventListener('click', onClick);
-  return () => {
-    root.removeEventListener('click', onClick);
-    document.body.classList.remove('dark');
-  };
+  return () => root.removeEventListener('click', onClick);
 }

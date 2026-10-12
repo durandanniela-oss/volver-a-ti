@@ -1,7 +1,7 @@
 // Guarda la app en el teléfono para que abra sin conexión.
 // Con conexión siempre carga la versión más nueva. Si agregas o quitas
 // archivos de la app, actualiza APP_FILES y sube este número de versión.
-const VERSION = 'v9';
+const VERSION = 'v10';
 const APP_CACHE = `volver-a-ti-${VERSION}`;
 const FONT_CACHE = 'volver-a-ti-fonts';
 
@@ -16,6 +16,8 @@ const APP_FILES = [
   'js/cycle.js',
   'js/data.js',
   'js/db.js',
+  'js/lecturas.js',
+  'js/lineart.js',
   'js/lock.js',
   'js/meds.js',
   'js/ui.js',
@@ -30,6 +32,7 @@ const APP_FILES = [
   'js/screens/diario.js',
   'js/screens/entrada.js',
   'js/screens/hoy.js',
+  'js/screens/lectura.js',
   'js/screens/mapa.js',
   'js/screens/medicamento.js',
   'js/screens/movimiento.js',
