@@ -23,12 +23,13 @@ import perfil from './screens/perfil.js';
 import cierre from './screens/cierre.js';
 import semana from './screens/semana.js';
 import lectura from './screens/lectura.js';
+import signo from './screens/signo.js';
 
 const routes = {
   bienvenida, checkin, hoy,
   diario, entrada, biblioteca, pausa, mapa,
   ciclo, registro, movimiento, nutricion, cuidado, medicamento, cita, resumen,
-  universo, carta, rituales, perfil, cierre, semana, lectura,
+  universo, carta, rituales, perfil, cierre, semana, lectura, signo,
 };
 
 const root = document.getElementById('app');

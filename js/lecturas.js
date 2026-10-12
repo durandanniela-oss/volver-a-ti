@@ -105,3 +105,98 @@ export function readingFor(areaId, birthDate, date = new Date()) {
   return dailyReadings(birthDate, date, AREAS.length).find((r) => r.area.id === areaId)
     || dailyReadings(birthDate, date, 1)[0];
 }
+
+// ---------- Contenido ampliado ----------
+
+const X = (favor, care, affirmation) => ({ favor, care, affirmation });
+
+// Qué favorece, qué cuidar y una afirmación para cada lectura.
+export const EXTRAS = {
+  amor: {
+    Oportunidad: X(['Conversaciones sinceras', 'Gestos pequeños de cariño', 'Pedir lo que necesitas'], ['Esperar que adivinen lo que sientes', 'Guardar silencio por miedo'], 'Merezco un amor que me escuche y me cuide.'),
+    Reto: X(['Hablar desde el "yo siento"', 'Tomarte un tiempo antes de responder', 'Escuchar sin defenderte'], ['Reproches acumulados', 'Decidir en caliente'], 'Puedo expresar lo que necesito con calma y claridad.'),
+    Equilibrio: X(['Tiempo a solas para recargarte', 'Notar cómo te sientes en tus vínculos', 'Agradecer a quien te quiere'], ['Darlo todo sin recibir', 'Olvidarte de ti por complacer'], 'El amor que doy empieza por mí.'),
+    Inicio: X(['Abrirte a conocer', 'Imaginar el vínculo que deseas', 'Soltar viejas expectativas'], ['Repetir patrones conocidos', 'Apresurar lo que está naciendo'], 'Me abro a amar de una forma nueva.'),
+  },
+  trabajo: {
+    Oportunidad: X(['Empezar lo que venías posponiendo', 'Proponer ideas', 'Pedir apoyo o colaboración'], ['Querer hacerlo todo hoy', 'Compararte con otros'], 'Confío en mi capacidad y avanzo a mi ritmo.'),
+    Reto: X(['Ordenar prioridades', 'Delegar o pedir más tiempo', 'Pausas cortas entre tareas'], ['Decir que sí a todo', 'Trabajar sin descanso'], 'No todo es urgente; elijo lo importante.'),
+    Equilibrio: X(['Revisar cómo te organizas', 'Cerrar pendientes pequeños', 'Celebrar lo logrado'], ['Medirte solo por lo que produces', 'Saltarte comidas o descansos'], 'Mi valor no depende de cuánto hago.'),
+    Inicio: X(['Anotar ideas nuevas', 'Aprender algo', 'Imaginar sin límites'], ['Descartar ideas antes de explorarlas', 'Esperar a tenerlo todo claro'], 'Las ideas nuevas merecen espacio para crecer.'),
+  },
+  hogar: {
+    Oportunidad: X(['Cuidar tu espacio', 'Compartir una comida en casa', 'Rituales sencillos en familia'], ['Llenar la casa de pendientes', 'Postergar el descanso en casa'], 'Mi hogar es un lugar donde puedo descansar.'),
+    Reto: X(['Poner límites con cariño', 'Responder distinto a lo de siempre', 'Buscar un rato a solas'], ['Repetir viejas discusiones', 'Cargar con lo que no te toca'], 'Puedo amar a mi familia y cuidar mis límites.'),
+    Equilibrio: X(['Equilibrar tiempo con otros y contigo', 'Ordenar un rincón', 'Llamar a alguien de tu familia'], ['Aislarte por completo', 'Olvidar tus propias necesidades'], 'Mis raíces me sostienen y mi espacio me pertenece.'),
+    Inicio: X(['Cambiar algo de lugar', 'Crear un ritual nuevo en casa', 'Imaginar tu hogar ideal'], ['Aferrarte a lo que ya no te sirve', 'Hacer cambios grandes de golpe'], 'Hago de mi casa un reflejo de quien soy.'),
+  },
+  social: {
+    Oportunidad: X(['Reconectar con amistades', 'Conocer gente nueva', 'Compartir lo que sabes'], ['Fingir que todo está bien', 'Llenar la agenda de más'], 'Me rodeo de personas que me hacen bien.'),
+    Reto: X(['Elegir con quién pasas tu tiempo', 'Decir que no con amabilidad', 'Descansar de las redes'], ['Compromisos por obligación', 'Compararte en redes sociales'], 'Mi energía es valiosa y elijo dónde ponerla.'),
+    Equilibrio: X(['Escuchar con atención', 'Pedir ayuda si la necesitas', 'Agradecer a una amistad'], ['Ser siempre quien sostiene', 'Callar lo que te molesta'], 'Doy y recibo en la misma medida.'),
+    Inicio: X(['Unirte a un grupo o clase', 'Escribir a alguien nuevo', 'Explorar comunidades afines'], ['Quedarte solo en lo conocido', 'Juzgarte por ser nueva'], 'Hay espacio para mí en nuevos círculos.'),
+  },
+  identidad: {
+    Oportunidad: X(['Mostrarte tal como eres', 'Tomar decisiones propias', 'Vestirte como te gusta'], ['Pedir permiso para ser tú', 'Minimizar tus logros'], 'Ser yo es suficiente.'),
+    Reto: X(['Hablarte con amabilidad', 'Recordar lo que valoras de ti', 'Alejarte de comparaciones'], ['Autocrítica dura', 'Buscar aprobación externa'], 'No necesito ser perfecta para ser valiosa.'),
+    Equilibrio: X(['Observarte sin juicio', 'Escribir sobre ti', 'Notar tus avances'], ['Exigirte cambiar todo', 'Ignorar lo que sientes'], 'Me miro con la ternura con la que miro a quien quiero.'),
+    Inicio: X(['Probar algo diferente', 'Definir una intención personal', 'Soltar etiquetas viejas'], ['Aferrarte a quien fuiste', 'Cambiar solo por complacer'], 'Me permito convertirme en quien estoy siendo.'),
+  },
+  creatividad: {
+    Oportunidad: X(['Crear sin propósito', 'Seguir tu curiosidad', 'Jugar'], ['Buscar perfección', 'Esperar el momento ideal'], 'Mi creatividad merece espacio en mis días.'),
+    Reto: X(['Empezar en pequeño', 'Cambiar de lugar para inspirarte', 'Copiar algo que admiras para aprender'], ['Forzar la inspiración', 'Juzgar lo que haces mientras lo haces'], 'Crear también es intentar.'),
+    Equilibrio: X(['Preguntarte qué te da sentido', 'Recordar lo que amabas de niña', 'Contemplar algo bello'], ['Llenar cada minuto de tareas', 'Olvidar lo que te hace sentir viva'], 'Lo que amo hacer le da sentido a mi vida.'),
+    Inicio: X(['Explorar un tema nuevo', 'Guardar ideas e inspiración', 'Probar un material o técnica'], ['Abandonar antes de intentar', 'Pensar que es tarde para aprender'], 'Sigo la chispa y veo a dónde me lleva.'),
+  },
+  autocuidado: {
+    Oportunidad: X(['Moverte con gusto', 'Dormir un poco más', 'Comer algo nutritivo y rico'], ['Exigirle a tu cuerpo más de la cuenta', 'Saltarte el descanso'], 'Mi cuerpo es mi casa y lo cuido con cariño.'),
+    Reto: X(['Bajar el ritmo', 'Descansar sin culpa', 'Pedir ayuda'], ['Ignorar el cansancio', 'Llenarte de compromisos'], 'Descansar también es avanzar.'),
+    Equilibrio: X(['Volver a tus rituales', 'Unos minutos sin pantalla', 'Respirar profundo varias veces'], ['Postergar tu bienestar', 'Cuidar a todos menos a ti'], 'Me doy a mí lo que necesito.'),
+    Inicio: X(['Empezar un hábito pequeño', 'Probar una práctica nueva', 'Registrar cómo te sientes'], ['Querer cambiarlo todo de golpe', 'Rendirte si un día no sale'], 'Cada pequeño cuidado cuenta.'),
+  },
+};
+
+// Qué significa cada tránsito.
+export const ASPECT_MEANING = {
+  'conjunción con': 'La Luna o el Sol se encuentran con tu Sol natal: un momento de comienzo, en el que tus emociones y tu identidad se mezclan. Buen día para sembrar intenciones.',
+  'sextil con': 'Un aspecto amable que abre pequeñas oportunidades. Las cosas fluyen si das el primer paso.',
+  'cuadratura con': 'Una tensión que invita a crecer. Puede aparecer fricción entre lo que sientes y lo que quieres; es una señal para ajustar, no para forzar.',
+  'trígono con': 'Uno de los aspectos más armoniosos: la energía fluye con facilidad y es más sencillo sentirte en sintonía contigo.',
+  'oposición a': 'Dos fuerzas se miran de frente. Puede tocarte equilibrar lo que necesitas tú con lo que necesitan los demás.',
+};
+export const BODY_MEANING = {
+  Luna: 'La Luna se mueve rápido, así que su influencia dura alrededor de un día y se siente sobre todo en las emociones y el ánimo.',
+  Sol: 'El Sol avanza despacio, así que su influencia dura varios días y toca tu energía vital y tu sentido de identidad.',
+};
+
+// La Luna en cada signo: el tono emocional del día.
+export const MOON_SIGNS = {
+  Aries: { mood: 'Energía rápida e impulso de empezar cosas. Puede haber poca paciencia.', favors: 'Actividad física, decisiones rápidas, iniciar algo.', tip: 'Respira antes de reaccionar.' },
+  Tauro: { mood: 'Necesidad de calma, comodidad y placeres sencillos.', favors: 'Comer rico, descansar, la naturaleza, el contacto físico.', tip: 'No te resistas al cambio por miedo a perder estabilidad.' },
+  Géminis: { mood: 'Mente curiosa y ganas de conversar, aprender y moverse.', favors: 'Conversaciones, lecturas, escribir, salidas cortas.', tip: 'Elige pocas cosas para no dispersarte.' },
+  Cáncer: { mood: 'Sensibilidad a flor de piel y deseo de refugio.', favors: 'Estar en casa, la familia, cocinar, cuidar y dejarte cuidar.', tip: 'Valida lo que sientes sin encerrarte.' },
+  Leo: { mood: 'Ganas de brillar, expresarte y sentirte vista.', favors: 'Crear, celebrar, jugar, mostrar tu trabajo.', tip: 'Tu valor no depende del aplauso.' },
+  Virgo: { mood: 'Deseo de orden, detalle y ser útil.', favors: 'Organizar, rutinas de salud, terminar pendientes.', tip: 'Cuidado con la autoexigencia.' },
+  Libra: { mood: 'Búsqueda de armonía, belleza y compañía.', favors: 'Vínculos, arte, conversaciones amables, embellecer tu espacio.', tip: 'No te pierdas por complacer.' },
+  Escorpio: { mood: 'Emociones intensas y profundas; ganas de ir al fondo.', favors: 'Introspección, conversaciones honestas, soltar lo que ya no sirve.', tip: 'No todo necesita resolverse hoy.' },
+  Sagitario: { mood: 'Optimismo, ganas de aventura y de aprender.', favors: 'Planes, viajes, estudios, conversaciones sobre el sentido de la vida.', tip: 'Cuida no prometer de más.' },
+  Capricornio: { mood: 'Sentido práctico y ganas de avanzar en metas.', favors: 'Trabajo enfocado, planear, estructurar.', tip: 'Recuerda descansar; no todo es productividad.' },
+  Acuario: { mood: 'Necesidad de libertad, ideas nuevas y espacio propio.', favors: 'Amistades, comunidad, proyectos diferentes.', tip: 'Conecta también con lo que sientes, no solo con lo que piensas.' },
+  Piscis: { mood: 'Sensibilidad, intuición y ganas de soñar.', favors: 'Arte, música, meditación, descanso, ayudar a otros.', tip: 'Pon límites para no absorber lo de los demás.' },
+};
+
+// Perfil de cada signo para tu Sol y tu Luna natal.
+export const SIGN_PROFILES = {
+  Aries: { element: 'Fuego', mode: 'Cardinal', essence: 'Iniciativa, valentía y entusiasmo para empezar.', strengths: ['Valentía', 'Iniciativa', 'Honestidad'], care: 'Aprender a esperar y a terminar lo que empiezas.', moon: 'Sientes rápido e intenso; necesitas expresar tus emociones y moverte para procesarlas.' },
+  Tauro: { element: 'Tierra', mode: 'Fijo', essence: 'Calma, constancia y disfrute de lo sencillo.', strengths: ['Constancia', 'Lealtad', 'Sensibilidad a la belleza'], care: 'Abrirte al cambio sin sentir que pierdes tu seguridad.', moon: 'Necesitas estabilidad y contacto con lo concreto: comida, descanso, naturaleza y cariño físico.' },
+  Géminis: { element: 'Aire', mode: 'Mutable', essence: 'Curiosidad, comunicación y adaptabilidad.', strengths: ['Curiosidad', 'Ingenio', 'Facilidad para comunicar'], care: 'Enfocar tu energía y conectar con lo que sientes, no solo con lo que piensas.', moon: 'Procesas tus emociones hablándolas o escribiéndolas; necesitas variedad y conversación.' },
+  Cáncer: { element: 'Agua', mode: 'Cardinal', essence: 'Sensibilidad, cuidado y memoria emocional.', strengths: ['Empatía', 'Intuición', 'Capacidad de cuidar'], care: 'Cuidarte a ti tanto como cuidas a otros.', moon: 'Sientes profundo y necesitas un refugio seguro; el hogar y los vínculos cercanos te calman.' },
+  Leo: { element: 'Fuego', mode: 'Fijo', essence: 'Creatividad, calidez y deseo de expresarte.', strengths: ['Generosidad', 'Creatividad', 'Calidez'], care: 'Brillar sin depender de la aprobación de los demás.', moon: 'Necesitas sentirte vista y querida; expresarte y crear te ayuda a sentirte bien.' },
+  Virgo: { element: 'Tierra', mode: 'Mutable', essence: 'Detalle, servicio y búsqueda de mejora.', strengths: ['Atención al detalle', 'Practicidad', 'Ganas de ayudar'], care: 'Soltar la autoexigencia y aceptar lo imperfecto.', moon: 'Te calma el orden y sentirte útil; cuidar tu rutina y tu cuerpo te da paz.' },
+  Libra: { element: 'Aire', mode: 'Cardinal', essence: 'Armonía, belleza y conexión con los demás.', strengths: ['Diplomacia', 'Sentido estético', 'Empatía en los vínculos'], care: 'Decir lo que piensas aunque genere desacuerdo.', moon: 'Necesitas armonía y compañía; los conflictos te desequilibran y la belleza te calma.' },
+  Escorpio: { element: 'Agua', mode: 'Fijo', essence: 'Intensidad, profundidad y capacidad de transformación.', strengths: ['Profundidad', 'Lealtad', 'Resiliencia'], care: 'Confiar y soltar el control de lo que no depende de ti.', moon: 'Sientes con intensidad y necesitas vínculos de confianza profunda; te renuevas soltando.' },
+  Sagitario: { element: 'Fuego', mode: 'Mutable', essence: 'Optimismo, libertad y búsqueda de sentido.', strengths: ['Optimismo', 'Espíritu aventurero', 'Sinceridad'], care: 'Sostener los compromisos y bajar a tierra tus ideas.', moon: 'Necesitas libertad y horizonte; aprender, viajar o planear te levanta el ánimo.' },
+  Capricornio: { element: 'Tierra', mode: 'Cardinal', essence: 'Responsabilidad, constancia y ambición tranquila.', strengths: ['Disciplina', 'Madurez', 'Perseverancia'], care: 'Permitirte descansar y mostrar tu vulnerabilidad.', moon: 'Te cuesta mostrar lo que sientes; te da seguridad avanzar en tus metas y tener estructura.' },
+  Acuario: { element: 'Aire', mode: 'Fijo', essence: 'Originalidad, libertad y visión de comunidad.', strengths: ['Originalidad', 'Visión de futuro', 'Sentido de comunidad'], care: 'Conectar con tus emociones y dejarte acompañar.', moon: 'Necesitas espacio propio y libertad emocional; las amistades son tu gran sostén.' },
+  Piscis: { element: 'Agua', mode: 'Mutable', essence: 'Sensibilidad, intuición e imaginación.', strengths: ['Compasión', 'Intuición', 'Creatividad'], care: 'Poner límites y no cargar con las emociones de otros.', moon: 'Absorbes el ambiente que te rodea; el arte, el descanso y la soledad te ayudan a recargarte.' },
+};

@@ -237,3 +237,8 @@ export function uid() {
   if (crypto.randomUUID) return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+// Intensidad del 1 al 5 con puntos.
+export function intDots(n, label = 'Intensidad') {
+  return `<span class="int-dots" role="img" aria-label="${label} ${n} de 5">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+}

@@ -22,10 +22,3 @@ const ART = {
 };
 
 export const lineArt = (name, size = 96) => wrap(ART[name] || ART.sol, size);
-
-// Reverso de las cartas: sol y luna entrelazados con un marco fino.
-export const cardBack = (size = 120) => wrap(
-  '<rect x="8" y="8" width="84" height="84" rx="10"/><circle cx="50" cy="50" r="18"/><path d="M58 38a14 14 0 1 0 0 24 11 11 0 0 1 0-24z"/>' +
-  '<path d="M50 20v8M50 72v8M20 50h8M72 50h8"/><circle cx="50" cy="50" r="30" stroke-dasharray="1 5"/>',
-  size,
-);
